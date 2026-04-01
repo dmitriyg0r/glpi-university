@@ -4,11 +4,8 @@
 /marketplace/
 /plugins/*/vendor/
 /vendor/
-/var/
-/log/
-/logs/
-/tmp/
-/.cache/
 .DS_Store
+*.tgz
+*.zip
 .env
 .env.*
