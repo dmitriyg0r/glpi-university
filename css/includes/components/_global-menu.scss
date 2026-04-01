@@ -186,6 +186,12 @@
 }
 
 @include media-breakpoint-up(lg) {
+    .navbar-brand {
+        .brand-logo-mini {
+            display: none;
+        }
+    }
+
     .sidebar {
         transition: width var(--animate-duration) !important;
     }
@@ -199,11 +205,15 @@
             margin: 0 calc(-1 * var(--tblr-gutter-x, 1.5rem)) 0.5rem;
             width: calc(100% + var(--tblr-gutter-x, 1.5rem) * 2);
 
-            .glpi-logo {
-                background: var(--glpi-logo-reduced) no-repeat;
-                background-size: contain;
+            .brand-logo-full {
+                display: none;
+            }
+
+            .brand-logo-mini {
+                display: inline-block;
                 width: 40px;
                 height: 40px;
+                object-fit: contain;
             }
         }
 
