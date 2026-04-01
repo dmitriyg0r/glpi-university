@@ -1,0 +1,14 @@
+/files/
+/config/config_db.php
+/config/local_define.php
+/marketplace/
+/plugins/*/vendor/
+/vendor/
+/var/
+/log/
+/logs/
+/tmp/
+/.cache/
+.DS_Store
+.env
+.env.*
