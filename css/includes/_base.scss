@@ -330,11 +330,11 @@ body.in_modal {
 
 .page-anonymous {
     .glpi-logo {
-        --logo: var(--glpi-logo-dark-login);
+        --logo: url("../pics/logos/mfua-logo.svg");
 
         content: var(--logo);
-        width: 200px;
-        height: 110px;
+        width: 114px;
+        height: 44px;
     }
 
     .main-content-card {
