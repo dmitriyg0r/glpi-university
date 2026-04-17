@@ -36,45 +36,79 @@
 
 {% set container_size = "xl" %}
 
+{% set status_labels = {
+    'created': 'Создан',
+    'updated': 'Обновлён',
+    'skipped': 'Пропущен',
+    'errors':  'Ошибка'
+} %}
+
+{% set stat_labels = {
+    'created': 'Создано',
+    'updated': 'Обновлено',
+    'skipped': 'Пропущено',
+    'errors':  'Ошибок'
+} %}
+
+{% set stat_icons = {
+    'created': 'ti-user-plus',
+    'updated': 'ti-user-edit',
+    'skipped': 'ti-user-minus',
+    'errors':  'ti-alert-triangle'
+} %}
+
+{% set stat_colors = {
+    'created': 'text-green',
+    'updated': 'text-blue',
+    'skipped': 'text-yellow',
+    'errors':  'text-red'
+} %}
+
 {% block content_title %}
-    {{ __('Import users from spreadsheet') }}
+    Импорт пользователей из таблицы
 {% endblock content_title %}
 
 {% block content_body %}
     <div class="row g-3">
+
+        {# ── Левая колонка: форма ── #}
         <div class="col-12 col-xl-8">
             <div class="card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                        <div>
-                            <h2 class="card-title mb-1">{{ __('Upload spreadsheet') }}</h2>
-                            <p class="text-secondary mb-0">
-                                {{ __('Only users who can create users manually can access this page.') }}
-                            </p>
-                        </div>
-                        <a class="btn btn-outline-secondary" href="{{ path('front/user.import.php') }}?download_template=1">
-                            <i class="ti ti-download"></i>
-                            <span>{{ __('Download template') }}</span>
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-file-arrow-left me-2 text-muted"></i>Загрузка файла
+                    </h3>
+                    <div class="card-options">
+                        <a class="btn btn-sm btn-outline-secondary" href="{{ path('front/user.import.php') }}?download_template=1">
+                            <i class="ti ti-download me-1"></i>Скачать шаблон
                         </a>
                     </div>
+                </div>
 
-                    <div class="alert alert-info" role="alert">
-                        {{ __('Supported formats: %s')|format(supported_extensions|join(', ')|upper) }}<br>
-                        {{ __('Use preview first to validate mappings before writing into GLPI.') }}<br>
-                        {{ __('Passwords for existing users are ignored unless "Update passwords" is enabled.') }}
+                <div class="card-body">
+                    <div class="alert alert-info d-flex gap-2 mb-4" role="alert">
+                        <i class="ti ti-info-circle flex-shrink-0 mt-1"></i>
+                        <div>
+                            <strong>Поддерживаемые форматы:</strong> {{ supported_extensions|join(', ')|upper }}<br>
+                            Используйте <strong>предпросмотр</strong> для проверки данных перед записью в систему.<br>
+                            Пароли существующих пользователей не обновляются, если не включена опция «Обновлять пароли».
+                        </div>
                     </div>
 
                     {% if global_error %}
-                        <div class="alert alert-danger" role="alert">
-                            {{ global_error }}
+                        <div class="alert alert-danger d-flex gap-2 mb-4" role="alert">
+                            <i class="ti ti-alert-circle flex-shrink-0 mt-1"></i>
+                            <div>{{ global_error }}</div>
                         </div>
                     {% endif %}
 
                     <form method="POST" enctype="multipart/form-data" action="{{ path('front/user.import.php') }}" data-submit-once>
+
+                        {# Раздел: выбор файла #}
                         {{ fields.fileField(
                             'import_file',
                             '',
-                            __('Spreadsheet'),
+                            'Файл таблицы',
                             {
                                 is_horizontal: true,
                                 simple: true,
@@ -82,35 +116,52 @@
                                 accept: '.xlsx,.xls,.csv'
                             }
                         ) }}
-                        {{ fields.textField('sheet', form.sheet, __('Sheet name'), {
-                            helper: __('Leave empty to use the active sheet.')
+                        {{ fields.textField('sheet', form.sheet, 'Название листа', {
+                            is_horizontal: true,
+                            helper: 'Оставьте пустым для использования активного листа.'
                         }) }}
-                        {{ fields.dropdownArrayField('mode', form.mode, mode_options, __('Mode'), {
+                        {{ fields.dropdownArrayField('mode', form.mode, mode_options, 'Режим импорта', {
+                            is_horizontal: true,
                             display_emptychoice: false
                         }) }}
-                        {{ fields.dropdownArrayField('default_profile', form.default_profile, default_profile_options, __('Default profile'), {
-                            display_emptychoice: false
-                        }) }}
-                        {{ fields.dropdownArrayField('default_entity', form.default_entity, default_entity_options, __('Default entity'), {
-                            display_emptychoice: false
-                        }) }}
-                        {{ fields.dropdownArrayField('default_location', form.default_location, default_location_options, __('Default location'), {
-                            display_emptychoice: false
-                        }) }}
-                        {{ fields.textField('default_language', form.default_language, __('Default language')) }}
-                        {{ fields.dropdownArrayField('default_active', form.default_active, default_active_options, __('Default active state'), {
-                            display_emptychoice: false
-                        }) }}
-                        {{ fields.checkboxField('update_passwords', form.update_passwords, __('Update passwords')) }}
 
-                        <div class="d-flex justify-content-end gap-2 mt-3">
-                            <button class="btn btn-outline-primary" type="submit" name="run_mode" value="dry-run">
-                                <i class="ti ti-eye"></i>
-                                <span>{{ __('Preview import') }}</span>
+                        <hr class="my-4">
+
+                        {# Раздел: значения по умолчанию #}
+                        <p class="text-uppercase text-muted fw-medium small mb-3" style="letter-spacing:.05em">
+                            Значения по умолчанию
+                        </p>
+
+                        {{ fields.dropdownArrayField('default_profile', form.default_profile, default_profile_options, 'Профиль', {
+                            is_horizontal: true,
+                            display_emptychoice: false
+                        }) }}
+                        {{ fields.dropdownArrayField('default_entity', form.default_entity, default_entity_options, 'Организация', {
+                            is_horizontal: true,
+                            display_emptychoice: false
+                        }) }}
+                        {{ fields.dropdownArrayField('default_location', form.default_location, default_location_options, 'Локация', {
+                            is_horizontal: true,
+                            display_emptychoice: false
+                        }) }}
+                        {{ fields.textField('default_language', form.default_language, 'Язык', {
+                            is_horizontal: true
+                        }) }}
+                        {{ fields.dropdownArrayField('default_active', form.default_active, default_active_options, 'Активность', {
+                            is_horizontal: true,
+                            display_emptychoice: false
+                        }) }}
+
+                        <hr class="my-4">
+
+                        {{ fields.checkboxField('update_passwords', form.update_passwords, 'Обновлять пароли') }}
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <button class="btn btn-outline-secondary" type="submit" name="run_mode" value="dry-run">
+                                <i class="ti ti-eye me-1"></i>Предпросмотр
                             </button>
                             <button class="btn btn-primary" type="submit" name="run_mode" value="execute">
-                                <i class="ti ti-upload"></i>
-                                <span>{{ __('Import users') }}</span>
+                                <i class="ti ti-upload me-1"></i>Импортировать
                             </button>
                         </div>
 
@@ -120,82 +171,157 @@
             </div>
         </div>
 
-        <div class="col-12 col-xl-4">
-            <div class="card mb-3">
+        {# ── Правая колонка: справка ── #}
+        <div class="col-12 col-xl-4 d-flex flex-column gap-3">
+
+            {# Столбцы файла #}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-columns me-2 text-muted"></i>Столбцы файла
+                    </h3>
+                </div>
                 <div class="card-body">
-                    <h2 class="card-title">{{ __('Expected columns') }}</h2>
-                    <div class="d-flex flex-wrap gap-2">
+                    <p class="small text-muted mb-2">Заголовки принимаются на русском и английском языке.</p>
+                    <div class="d-flex flex-wrap gap-1">
                         {% for column in supported_columns %}
-                            <span class="badge bg-secondary-lt">{{ column }}</span>
+                            <span class="badge bg-secondary-lt text-secondary">{{ column }}</span>
                         {% endfor %}
                     </div>
                 </div>
             </div>
 
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h2 class="card-title">{{ __('Profiles') }}</h2>
-                    <ul class="list-group list-group-flush">
-                        {% for id, name in references.profiles %}
-                            <li class="list-group-item px-0 d-flex justify-content-between">
-                                <span>{{ name }}</span>
-                                <span class="text-secondary">{{ id }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h2 class="card-title">{{ __('Entities') }}</h2>
-                    <ul class="list-group list-group-flush">
-                        {% for id, name in references.entities %}
-                            <li class="list-group-item px-0 d-flex justify-content-between">
-                                <span>{{ name }}</span>
-                                <span class="text-secondary">{{ id }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-
+            {# Справочники — аккордеон #}
+            {% if references.profiles or references.entities or references.locations %}
             <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title">{{ __('Locations') }}</h2>
-                    <ul class="list-group list-group-flush">
-                        {% for id, name in references.locations %}
-                            <li class="list-group-item px-0 d-flex justify-content-between">
-                                <span>{{ name }}</span>
-                                <span class="text-secondary">{{ id }}</span>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-list me-2 text-muted"></i>Справочники
+                    </h3>
+                </div>
+                <div class="accordion accordion-flush" id="referencesAccordion">
+
+                    {% if references.profiles %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#ref-profiles">
+                                <i class="ti ti-user-shield me-2 text-muted"></i>
+                                Профили
+                                <span class="badge bg-secondary-lt text-secondary ms-auto me-2">{{ references.profiles|length }}</span>
+                            </button>
+                        </h2>
+                        <div id="ref-profiles" class="accordion-collapse collapse" data-bs-parent="#referencesAccordion">
+                            <div class="accordion-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for id, name in references.profiles %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                                            <span class="small">{{ name }}</span>
+                                            <span class="badge bg-secondary-lt text-secondary">{{ id }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if references.entities %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#ref-entities">
+                                <i class="ti ti-building me-2 text-muted"></i>
+                                Организации
+                                <span class="badge bg-secondary-lt text-secondary ms-auto me-2">{{ references.entities|length }}</span>
+                            </button>
+                        </h2>
+                        <div id="ref-entities" class="accordion-collapse collapse" data-bs-parent="#referencesAccordion">
+                            <div class="accordion-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for id, name in references.entities %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                                            <span class="small">{{ name }}</span>
+                                            <span class="badge bg-secondary-lt text-secondary">{{ id }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if references.locations %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed py-2" type="button"
+                                    data-bs-toggle="collapse" data-bs-target="#ref-locations">
+                                <i class="ti ti-map-pin me-2 text-muted"></i>
+                                Локации
+                                <span class="badge bg-secondary-lt text-secondary ms-auto me-2">{{ references.locations|length }}</span>
+                            </button>
+                        </h2>
+                        <div id="ref-locations" class="accordion-collapse collapse" data-bs-parent="#referencesAccordion">
+                            <div class="accordion-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for id, name in references.locations %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center px-3 py-2">
+                                            <span class="small">{{ name }}</span>
+                                            <span class="badge bg-secondary-lt text-secondary">{{ id }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
                 </div>
             </div>
+            {% endif %}
+
         </div>
     </div>
 
+    {# ── Результаты ── #}
     {% if import_result %}
         {% set is_dry_run = import_result.options.dry_run %}
         <div class="card mt-3">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                    <div>
-                        <h2 class="card-title mb-1">{{ is_dry_run ? __('Preview results') : __('Import results') }}</h2>
-                        <p class="text-secondary mb-0">
-                            {{ is_dry_run ? __('No changes were written to GLPI.') : __('The selected spreadsheet has been applied.') }}
-                        </p>
-                    </div>
-                </div>
+            <div class="card-header">
+                <h3 class="card-title">
+                    {% if is_dry_run %}
+                        <i class="ti ti-eye me-2 text-muted"></i>Результаты предпросмотра
+                    {% else %}
+                        <i class="ti ti-circle-check me-2 text-green"></i>Результаты импорта
+                    {% endif %}
+                </h3>
+            </div>
 
-                <div class="row g-3 mb-3">
+            <div class="card-body">
+                {% if is_dry_run %}
+                    <div class="alert alert-warning d-flex gap-2 mb-4" role="alert">
+                        <i class="ti ti-clock flex-shrink-0 mt-1"></i>
+                        <div>Изменения <strong>не были применены</strong> — это только предварительный просмотр данных.</div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-success d-flex gap-2 mb-4" role="alert">
+                        <i class="ti ti-check flex-shrink-0 mt-1"></i>
+                        <div>Данные из таблицы успешно применены к системе.</div>
+                    </div>
+                {% endif %}
+
+                <div class="row g-3 mb-4">
                     {% for key, value in import_result.stats %}
-                        <div class="col-6 col-xl-3">
-                            <div class="card bg-body-tertiary border-0">
-                                <div class="card-body py-3">
-                                    <div class="text-secondary text-uppercase small">{{ key }}</div>
-                                    <div class="fs-2 fw-bold">{{ value }}</div>
+                        <div class="col-6 col-sm-3">
+                            <div class="card border-0 bg-body-tertiary h-100">
+                                <div class="card-body py-3 px-3">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <i class="ti {{ stat_icons[key] ?? 'ti-hash' }} {{ stat_colors[key] ?? 'text-secondary' }}"></i>
+                                        <span class="text-uppercase small fw-medium text-muted" style="letter-spacing:.05em">
+                                            {{ stat_labels[key] ?? key }}
+                                        </span>
+                                    </div>
+                                    <div class="fs-1 fw-bold lh-1 {{ stat_colors[key] ?? 'text-secondary' }}">{{ value }}</div>
                                 </div>
                             </div>
                         </div>
@@ -203,13 +329,13 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
+                    <table class="table table-vcenter table-hover card-table">
                         <thead>
                             <tr>
-                                <th>{{ __('Row') }}</th>
-                                <th>{{ __('Login') }}</th>
-                                <th>{{ __('Status') }}</th>
-                                <th>{{ __('Message') }}</th>
+                                <th class="w-1 text-muted">#</th>
+                                <th>Логин</th>
+                                <th class="w-1">Статус</th>
+                                <th>Сообщение</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -225,10 +351,10 @@
                                     {% set badge_class = 'bg-red-lt text-red' %}
                                 {% endif %}
                                 <tr>
-                                    <td>{{ row.row }}</td>
-                                    <td>{{ row.login ?: '—' }}</td>
-                                    <td><span class="badge {{ badge_class }}">{{ row.status }}</span></td>
-                                    <td>{{ row.message }}</td>
+                                    <td class="text-muted small">{{ row.row }}</td>
+                                    <td><strong>{{ row.login ?: '—' }}</strong></td>
+                                    <td><span class="badge {{ badge_class }}">{{ status_labels[row.status] ?? row.status }}</span></td>
+                                    <td class="text-muted small">{{ row.message }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

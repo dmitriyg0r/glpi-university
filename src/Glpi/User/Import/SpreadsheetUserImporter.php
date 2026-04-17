@@ -114,7 +114,7 @@ final class SpreadsheetUserImporter
                         'row'     => $row['row'],
                         'login'   => $login,
                         'status'  => 'skipped',
-                        'message' => __('Empty login, row skipped'),
+                        'message' => 'Пустой логин — строка пропущена',
                     ];
                     continue;
                 }
@@ -259,7 +259,7 @@ final class SpreadsheetUserImporter
             : $spreadsheet->getActiveSheet();
 
         if (!$worksheet instanceof Worksheet) {
-            throw new RuntimeException(__('Requested sheet was not found in the spreadsheet.'));
+            throw new RuntimeException('Указанный лист не найден в файле.');
         }
 
         $highestColumnIndex = Coordinate::columnIndexFromString($worksheet->getHighestColumn());
@@ -331,13 +331,13 @@ final class SpreadsheetUserImporter
             $profileValue,
             $context['profiles_by_id'],
             $context['profiles_by_name'],
-            __('profile')
+            'профиль'
         );
         $entityId = $this->resolveReference(
             $entityValue,
             $context['entities_by_id'],
             $context['entities_by_name'],
-            __('entity')
+            'организацию'
         );
         $locationId = $locationValue === ''
             ? 0
@@ -345,7 +345,7 @@ final class SpreadsheetUserImporter
                 $locationValue,
                 $context['locations_by_id'],
                 $context['locations_by_name'],
-                __('location')
+                'локацию'
             );
 
         return [
@@ -374,20 +374,20 @@ final class SpreadsheetUserImporter
     private function resolveReference(string $value, array $byId, array $byName, string $label): int
     {
         if ($value === '') {
-            throw new RuntimeException(sprintf(__('Missing %s value.'), $label));
+            throw new RuntimeException(sprintf('Не указано значение для поля «%s».', $label));
         }
 
         if (ctype_digit($value)) {
             $id = (int) $value;
             if (!array_key_exists($id, $byId)) {
-                throw new RuntimeException(sprintf(__('Unknown %1$s ID: %2$s'), $label, $value));
+                throw new RuntimeException(sprintf('Неизвестный ID %1$s: %2$s', $label, $value));
             }
             return $id;
         }
 
         $key = mb_strtolower(trim($value));
         if (!array_key_exists($key, $byName)) {
-            throw new RuntimeException(sprintf(__('Unknown %1$s name: %2$s'), $label, $value));
+            throw new RuntimeException(sprintf('Неизвестное значение %1$s: «%2$s»', $label, $value));
         }
 
         return (int) $byName[$key];
@@ -406,7 +406,7 @@ final class SpreadsheetUserImporter
             return false;
         }
 
-        throw new RuntimeException(sprintf(__('Unsupported boolean value: %s'), $value));
+        throw new RuntimeException(sprintf('Неподдерживаемое логическое значение: «%s»', $value));
     }
 
     private function importUserRow(array $input, string $mode, bool $dryRun, bool $updatePasswords): array
@@ -415,19 +415,19 @@ final class SpreadsheetUserImporter
         $exists = $user->getFromDBbyName($input['login']);
 
         if (!$exists && $mode === 'update') {
-            return ['status' => 'skipped', 'message' => __('User does not exist')];
+            return ['status' => 'skipped', 'message' => 'Пользователь не найден'];
         }
         if ($exists && $mode === 'create') {
-            return ['status' => 'skipped', 'message' => __('User already exists')];
+            return ['status' => 'skipped', 'message' => 'Пользователь уже существует'];
         }
         if (!$exists && $input['password'] === '') {
-            throw new RuntimeException(__('Password is required for new users.'));
+            throw new RuntimeException('Для нового пользователя необходимо указать пароль.');
         }
 
         if ($dryRun) {
             return [
                 'status'  => $exists ? 'updated' : 'created',
-                'message' => $exists ? __('Would update') : __('Would create'),
+                'message' => $exists ? 'Будет обновлён' : 'Будет создан',
             ];
         }
 
@@ -435,14 +435,14 @@ final class SpreadsheetUserImporter
             $createdId = $this->createUser($input);
             return [
                 'status'  => 'created',
-                'message' => sprintf(__('Created user ID %d'), $createdId),
+                'message' => sprintf('Создан пользователь (ID %d)', $createdId),
             ];
         }
 
         $this->updateUser($user, $input, $updatePasswords);
         return [
             'status'  => 'updated',
-            'message' => __('Updated'),
+            'message' => 'Данные обновлены',
         ];
     }
 
@@ -476,7 +476,7 @@ final class SpreadsheetUserImporter
 
         $id = (int) $user->add($payload);
         if ($id <= 0) {
-            throw new RuntimeException(sprintf(__('Failed to create user %s'), $input['login']));
+            throw new RuntimeException(sprintf('Не удалось создать пользователя «%s»', $input['login']));
         }
 
         $this->syncProfileAuthorization($id, $input['profile_id'], $input['entity_id']);
@@ -509,7 +509,7 @@ final class SpreadsheetUserImporter
         }
 
         if (!$user->update($payload)) {
-            throw new RuntimeException(sprintf(__('Failed to update user %s'), $input['login']));
+            throw new RuntimeException(sprintf('Не удалось обновить пользователя «%s»', $input['login']));
         }
 
         if ($input['email'] !== '') {
@@ -536,7 +536,7 @@ final class SpreadsheetUserImporter
                 'is_default_profile' => 1,
             ]);
             if ((int) $added <= 0) {
-                throw new RuntimeException(sprintf(__('Failed to add profile authorization for user %d'), $userId));
+                throw new RuntimeException(sprintf('Не удалось назначить профиль пользователю с ID %d', $userId));
             }
         }
 
@@ -573,7 +573,7 @@ final class SpreadsheetUserImporter
                 'is_default' => 1,
             ]);
             if ($existingId <= 0) {
-                throw new RuntimeException(sprintf(__('Failed to add email %1$s for user %2$d'), $email, $userId));
+                throw new RuntimeException(sprintf('Не удалось добавить email %1$s пользователю с ID %2$d', $email, $userId));
             }
         }
 

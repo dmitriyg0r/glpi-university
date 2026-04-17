@@ -187,7 +187,7 @@ class User extends CommonDBTM implements TreeBrowseInterface
             }
         }
         if (static::canCreate()) {
-            $links['<i class="ti ti-file-arrow-left"></i><span>' . __s('Import from spreadsheet') . '</span>'] = 'front/user.import.php';
+            $links['<i class="ti ti-file-arrow-left"></i><span>' . __s('Импорт из таблицы') . '</span>'] = 'front/user.import.php';
         }
         return $links;
     }

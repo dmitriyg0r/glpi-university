@@ -55,15 +55,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $uploadedFile = $_FILES['import_file'] ?? null;
     if (!is_array($uploadedFile) || (int) ($uploadedFile['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        $globalError = __('Select a spreadsheet file to import.');
+        $globalError = 'Выберите файл таблицы для импорта.';
     } else {
         $extension = strtolower((string) pathinfo((string) $uploadedFile['name'], PATHINFO_EXTENSION));
         if (!in_array($extension, SpreadsheetUserImporter::getSupportedExtensions(), true)) {
-            $globalError = __('Unsupported file format. Use XLSX, XLS or CSV.');
+            $globalError = 'Неподдерживаемый формат файла. Используйте XLSX, XLS или CSV.';
         } else {
             $target = GLPI_TMP_DIR . '/' . uniqid('user-import-', true) . '.' . $extension;
             if (!move_uploaded_file((string) $uploadedFile['tmp_name'], $target)) {
-                $globalError = __('Unable to read the uploaded file.');
+                $globalError = 'Не удалось прочитать загруженный файл.';
             } else {
                 try {
                     $importResult = $importer->importFile($target, [
@@ -87,24 +87,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$defaultProfileOptions = ['' => __('Use file value')] + $references['profiles'];
-$defaultEntityOptions = ['' => __('Use file value')] + $references['entities'];
-$defaultLocationOptions = ['' => __('Use file value')] + $references['locations'];
+$defaultProfileOptions = ['' => 'Из файла'] + $references['profiles'];
+$defaultEntityOptions = ['' => 'Из файла'] + $references['entities'];
+$defaultLocationOptions = ['' => 'Из файла'] + $references['locations'];
 $defaultActiveOptions = [
-    ''  => __('Use file value'),
-    '1' => __('Yes'),
-    '0' => __('No'),
+    ''  => 'Из файла',
+    '1' => 'Да',
+    '0' => 'Нет',
 ];
 $modeOptions = [
-    'create' => __('Create only'),
-    'update' => __('Update only'),
-    'upsert' => __('Create and update'),
+    'create' => 'Только создание',
+    'update' => 'Только обновление',
+    'upsert' => 'Создание и обновление',
 ];
 
-Html::header(__('Import users from spreadsheet'), '', 'admin', 'user');
+Html::header('Импорт пользователей из таблицы', '', 'admin', 'user');
 
 TemplateRenderer::getInstance()->display('pages/admin/user/import_users.html.twig', [
-    'title'                   => __('Import users from spreadsheet'),
+    'title'                   => 'Импорт пользователей из таблицы',
     'form'                    => $form,
     'mode_options'            => $modeOptions,
     'default_profile_options' => $defaultProfileOptions,
