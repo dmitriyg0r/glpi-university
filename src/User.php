@@ -186,6 +186,9 @@ class User extends CommonDBTM implements TreeBrowseInterface
                 $links['<i class="ti ti-settings"></i><span>' . __s('LDAP directory link') . '</span>'] = "front/ldap.php";
             }
         }
+        if (static::canCreate()) {
+            $links['<i class="ti ti-file-arrow-left"></i><span>' . __s('Import from spreadsheet') . '</span>'] = 'front/user.import.php';
+        }
         return $links;
     }
 
