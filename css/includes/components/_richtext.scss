@@ -31,7 +31,7 @@
  * ---------------------------------------------------------------------
  */
 
-:root:not([glpi-theme-dark="1"]) {
+:root:not([data-glpi-theme-dark="1"]) {
     body.mce-content-body {
         background: transparent;
     }

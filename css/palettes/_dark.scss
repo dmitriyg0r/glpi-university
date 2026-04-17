@@ -31,6 +31,8 @@
  * ---------------------------------------------------------------------
  */
 
+$is-dark: true;
+
 :root[data-glpi-theme="dark"] {
     --tblr-primary-rgb: 88, 89, 87;
     --tblr-primary-fg: #fff;

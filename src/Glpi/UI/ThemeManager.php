@@ -78,7 +78,7 @@ class ThemeManager
                 new Theme('automn', 'Autumn', false, false),
                 new Theme('classic', 'Classic', false, false),
                 new Theme('clockworkorange', 'Clockwork Orange', false, false),
-                new Theme('dark', 'Dark', false, false),
+                new Theme('dark', 'Dark', true, false),
                 new Theme('darker', 'Darker', true, false),
                 new Theme('flood', 'Flood', false, false),
                 new Theme('greenflat', 'Green Flat', false, false),

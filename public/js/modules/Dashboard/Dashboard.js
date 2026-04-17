@@ -145,6 +145,10 @@ class GLPIDashboard {
         this.cache_key    = options.cache_key || "";
         this.filters_selector = this.elem_id + ' .filters';
 
+        const dark_theme = $('html').attr('data-glpi-theme-dark') === '1';
+        this.element.toggleClass('theme-dark', dark_theme);
+        $(`${this.elem_id} .toolbar .night-mode`).toggleClass('active', dark_theme);
+
         // compute the width offset of gridstack container relatively to viewport
         const elem_domRect = this.elem_dom.getBoundingClientRect();
         const width_offset = elem_domRect.left + (window.innerWidth - elem_domRect.right) + 0.02;

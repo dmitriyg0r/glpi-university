@@ -253,7 +253,7 @@
     }
 }
 
-:root[data-high-contrast="1"][glpi-theme-dark="1"] {
+:root[data-high-contrast="1"][data-glpi-theme-dark="1"] {
     $hc-border-color-contrast: var(--tblr-gray-400);
 
     @each $color, $value in $theme-colors {
