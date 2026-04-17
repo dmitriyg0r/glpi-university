@@ -752,10 +752,13 @@ var initMap = function(parent_elt, map_id, height, initial_view = {position: [0,
     //add map, set a default arbitrary location
     parent_elt.append($('<div id="'+_.escape(map_id)+'" style="height: ' + _.escape(height) + '"></div>'));
     var map = L.map(map_id, {fullscreenControl: true, minZoom: 2}).setView(initial_view.position, initial_view.zoom);
+    map.attributionControl.setPrefix(false);
 
     //setup tiles and © messages
-    L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href=\'https://osm.org/copyright\'>OpenStreetMap</a> contributors',
+    L.tileLayer('https://tile{s}.maps.2gis.com/tiles?x={x}&y={y}&z={z}&v=1.5', {
+        subdomains: '0123',
+        attribution: '&copy; <a href=\'https://2gis.ru\'>2GIS</a>',
+        maxZoom: 18,
     }).addTo(map);
     return map;
 };

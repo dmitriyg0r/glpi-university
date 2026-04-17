@@ -85,7 +85,12 @@ class GeolocationField {
         const geocoder = L.Control.geocoder({
             defaultMarkGeocode: false,
             errorMessage: __('No results found'),
-            placeholder: __('Search')
+            placeholder: __('Search'),
+            geocoder: L.Control.Geocoder.nominatim({
+                geocodingQueryParams: {
+                    'accept-language': 'ru',
+                },
+            }),
         });
         geocoder.on('markgeocode', (e) => {
             this._map.fitBounds(e.geocode.bbox);
