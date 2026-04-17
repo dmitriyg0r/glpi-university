@@ -65,6 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!move_uploaded_file((string) $uploadedFile['tmp_name'], $target)) {
                 $globalError = 'Не удалось прочитать загруженный файл.';
             } else {
+                // Файл перемещён — убираем из $_FILES, иначе Html::footer()
+                // попытается переоткрыть уже несуществующий temp-файл через Symfony Request.
+                unset($_FILES['import_file']);
                 try {
                     $importResult = $importer->importFile($target, [
                         'sheet'            => $form['sheet'],
